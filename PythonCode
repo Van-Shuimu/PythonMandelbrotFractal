@@ -1,40 +1,40 @@
 from tkinter import Tk, Canvas, BOTH
-
+from numba import *
 from time import *
+import numpy as np
 root = Tk()
 
 width,height = 1024,768
-
+xaxis, yaxis = width // 2, height // 2
 root.geometry(f"{width}x{height}+0+0")
-
+scale = 350
+iterations = 512
 canvas = Canvas()
 canvas.pack(fill=BOTH, expand=1)
 
+@jit(fastmath=True)
+def mathfr(ix,iy):
+    z = np.csingle(0+0j)
+    c = np.complex((ix - xaxis), (iy - yaxis))
+    for i in range(iterations):
+        z = np.multiply(z, z)+ np.divide(c, scale)
+        #z = z * z + c/scale
+        if (z.imag) > 2.0:
+            return True
 
-def fractal(width,height):
-    xaxis, yaxis = width // 2, height // 2
-    scale = 256
-    iterations = 256
+
+
+def fractal():
     for iy in range(height):
         for ix in range(width):
-            z = 0j
-            c = complex(float((ix - xaxis) / scale), float((iy - yaxis) / scale))
-            for i in range(iterations):
-                z = z * z + c
-                # if z.real < -1.5:
-                if abs(z) > 1.5:
-                    canvas.create_rectangle(ix, iy, ix + 1, iy + 1)
-                    break
-        root.update()
+            if (mathfr(ix,iy)):
+                canvas.create_rectangle(ix, iy, ix + 1, iy + 1)
+        if not (iy%32):
+            root.update()
+
+
 
 
 start_Time = time()
-fractal(width,height)
+fractal()
 print(time()-start_Time)
-
-#offset = 299
-# for x in range(1000):
-#     canvas.create_rectangle(m.sin(x)*x/2+offset-1,m.cos(x)*x/2+offset-1,m.sin(x)*x/2+offset,m.cos(x)*x/2+offset)
-#     sleep(0.05)
-#     root.update()
-root.mainloop()
