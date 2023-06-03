@@ -1,59 +1,59 @@
 
-import pygame as pg
-from pygame import gfxdraw
-import encodings
-import time
-t1 = time.time()
+
+from pygame.display import set_mode, update
+from pygame.gfxdraw import pixel
+from pygame import DOUBLEBUF
+from pygame.event import set_allowed
+from time import sleep, time
+from numba import *
+import numpy as np
+from math import *
+#from cytest import mathfr
+
 
 width, height = 1900,1060
-screen = pg.display.set_mode((width, height))
-xaxis,yaxis = width//2, height//2
-
+screen = set_mode((width, height),DOUBLEBUF)
+screen.set_alpha(None)
+set_allowed(None)
+xaxis, yaxis = width // 2, height // 2
 scale = 450
-iterations = 40
-
-game = True
-xi = 0
+iterations = 512
 
 
-# def formula(z,c,xi):
-#    return z * z + c + xi
+@jit(fastmath=True)
+def mathfr(ix,iy):
+    z = np.csingle(0+0j)
+    c = np.complex((ix - xaxis), (iy - yaxis))
+    for i in range(iterations):
+        z = np.multiply(z, z)+ np.divide(c, scale)
+        #z = z * z + c/scale
+        if (z.imag) > 2.0:
+            return True
 
-def fractal(height,width,xaxis,yaxis,screen,scale,iterations,xi):
-    screen.fill((130, 0, 0))
+
+
+
+# @jit(fastmath=True)
+# def mathfr(ix,iy):
+#     z = np.complex(0+0j)
+#     c = np.complex((ix - xaxis), (iy - yaxis))
+#     for i in range(iterations):
+#         z = np.multiply(z, z)+ np.divide(c, scale)
+#         #z = z * z + c/scale
+#         if z.real > 2.0:
+#             return True
+
+
+def fractal(screen):
     for iy in range(height):
-
         for ix in range(width):
+            if (mathfr(ix,iy)):
+                pixel(screen, ix, iy, (100,0,0))
+        if not (iy%32):
+            update(0,iy-32,width,iy)
+start_Time = time()
+fractal(screen)
+print(time()-start_Time)
 
-            z = 0+0j
-            c = complex(float(ix-xaxis)/scale, float(iy-yaxis)/scale)
-            x = c.real
-
-            q = (x-0.25)*(x-0.25)+c.imag*c.imag
-            #if (q*(q+(x-0.25)) > c.imag*c.imag/4.0 or (x+1.0)*(x+1.0) + c.imag*c.imag <0.063):
-
-            for i in range(iterations):
-                #z += formula(z,c,xi)
-                z = z**2 + c + xi
-                if abs(z) > 2:
-
-                    gfxdraw.pixel(screen, ix, iy, (0,0,0))
-                    break
-        pg.display.update()
-
-
-while game:
-
-
-    fractal(height,width,xaxis,yaxis,screen,scale,iterations,xi)
-
-    for event in pg.event.get():
-        if event.type == pg.KEYDOWN:
-            if event.key == pg.K_d:
-                xi+=0.1
-            elif event.key == pg.K_BACKSPACE:
-                game = False
-    print(time.time() - t1)
-
-
-
+sleep(1)
+exit(0)
