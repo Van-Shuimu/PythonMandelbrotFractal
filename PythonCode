@@ -1,59 +1,40 @@
+from tkinter import Tk, Canvas, BOTH
+
+from time import *
+root = Tk()
+
+width,height = 1024,768
+
+root.geometry(f"{width}x{height}+0+0")
+
+canvas = Canvas()
+canvas.pack(fill=BOTH, expand=1)
 
 
-from pygame.display import set_mode, update
-from pygame.gfxdraw import pixel
-from pygame import DOUBLEBUF
-from pygame.event import set_allowed
-from time import sleep, time
-from numba import *
-import numpy as np
-from math import *
-#from cytest import mathfr
-
-
-width, height = 1900,1060
-screen = set_mode((width, height),DOUBLEBUF)
-screen.set_alpha(None)
-set_allowed(None)
-xaxis, yaxis = width // 2, height // 2
-scale = 450
-iterations = 512
-
-
-@jit(fastmath=True)
-def mathfr(ix,iy):
-    z = np.csingle(0+0j)
-    c = np.complex((ix - xaxis), (iy - yaxis))
-    for i in range(iterations):
-        z = np.multiply(z, z)+ np.divide(c, scale)
-        #z = z * z + c/scale
-        if (z.imag) > 2.0:
-            return True
-
-
-
-
-# @jit(fastmath=True)
-# def mathfr(ix,iy):
-#     z = np.complex(0+0j)
-#     c = np.complex((ix - xaxis), (iy - yaxis))
-#     for i in range(iterations):
-#         z = np.multiply(z, z)+ np.divide(c, scale)
-#         #z = z * z + c/scale
-#         if z.real > 2.0:
-#             return True
-
-
-def fractal(screen):
+def fractal(width,height):
+    xaxis, yaxis = width // 2, height // 2
+    scale = 256
+    iterations = 256
     for iy in range(height):
         for ix in range(width):
-            if (mathfr(ix,iy)):
-                pixel(screen, ix, iy, (100,0,0))
-        if not (iy%32):
-            update(0,iy-32,width,iy)
+            z = 0j
+            c = complex(float((ix - xaxis) / scale), float((iy - yaxis) / scale))
+            for i in range(iterations):
+                z = z * z + c
+                # if z.real < -1.5:
+                if abs(z) > 1.5:
+                    canvas.create_rectangle(ix, iy, ix + 1, iy + 1)
+                    break
+        root.update()
+
+
 start_Time = time()
-fractal(screen)
+fractal(width,height)
 print(time()-start_Time)
 
-sleep(1)
-exit(0)
+#offset = 299
+# for x in range(1000):
+#     canvas.create_rectangle(m.sin(x)*x/2+offset-1,m.cos(x)*x/2+offset-1,m.sin(x)*x/2+offset,m.cos(x)*x/2+offset)
+#     sleep(0.05)
+#     root.update()
+root.mainloop()
