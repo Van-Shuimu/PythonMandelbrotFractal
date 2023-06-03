@@ -1,2 +1,2 @@
 # PythonMandelbrotFractal
-My python mandelbrot fractal written using tkinter python library
+My python mandelbrot fractal written using pygame python library
