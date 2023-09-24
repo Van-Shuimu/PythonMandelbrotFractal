@@ -1,40 +1,81 @@
-from tkinter import Tk, Canvas, BOTH
-
-from time import *
-root = Tk()
-
-width,height = 1024,768
-
-root.geometry(f"{width}x{height}+0+0")
-
-canvas = Canvas()
-canvas.pack(fill=BOTH, expand=1)
+#include <iostream>
+#include <string>
+#include <complex>
+#include <SFML/Graphics.hpp>
+#include <unistd.h>
+#include <chrono>
+using namespace std;
+using namespace sf;
 
 
-def fractal(width,height):
-    xaxis, yaxis = width // 2, height // 2
-    scale = 256
-    iterations = 256
-    for iy in range(height):
-        for ix in range(width):
-            z = 0j
-            c = complex(float((ix - xaxis) / scale), float((iy - yaxis) / scale))
-            for i in range(iterations):
-                z = z * z + c
-                # if z.real < -1.5:
-                if abs(z) > 1.5:
-                    canvas.create_rectangle(ix, iy, ix + 1, iy + 1)
-                    break
-        root.update()
+bool fractalMath(int its, complex<float> z, complex<float> c,int ix, int iy){
+    for (int i=0; i<its; i++){
+        z = z*z+c;
+        if (z.real()>2) return true;
+    }
+    return false;
+}
 
 
-start_Time = time()
-fractal(width,height)
-print(time()-start_Time)
+void fractal(int xsize,int ysize,int xaxis,int yaxis,float scale, int its, Vertex point[], RenderWindow &window){
+    window.clear();
+    for (int iy=0; iy<ysize; iy++){
+            for (int ix=0; ix<xsize; ix++){
+                complex <float> z (0.0,0.0);
+                complex <float> c ((ix-xaxis)/scale,(iy-yaxis)/scale);
+                if (fractalMath(its,z,c,ix,iy)){
+                    point[0].position=Vector2f(ix,iy);
+                    window.draw(point,1,Points);
+                }
+            }
+            if (!(iy%128)) window.display();
+        }
+    window.display();
+}
 
-#offset = 299
-# for x in range(1000):
-#     canvas.create_rectangle(m.sin(x)*x/2+offset-1,m.cos(x)*x/2+offset-1,m.sin(x)*x/2+offset,m.cos(x)*x/2+offset)
-#     sleep(0.05)
-#     root.update()
-root.mainloop()
+
+int main()
+{
+    Image icon;
+    icon.loadFromFile("icon.png");
+    RenderWindow window(VideoMode::getFullscreenModes()[10], "SFML works!"); //RenderWindow window(VideoMode::getDesktopMode(), "SFML works!");
+    //window.setVerticalSyncEnabled(true);
+    window.setFramerateLimit(10);
+    window.setIcon(icon.getSize().x,icon.getSize().y,icon.getPixelsPtr());
+    
+    
+    int xsize = window.getSize().x;
+    int ysize = window.getSize().y;
+    int xaxis = xsize/2;
+    int yaxis = ysize/2;
+    int ix,iy=0;
+    int its=128;
+    float scale=250;
+    complex z=(0,0);
+    complex c=(0,0);
+
+    bool flag=1;
+    
+
+    CircleShape shape(50);
+    shape.setFillColor(Color::Green);
+    Vertex point[] = {Vertex(Vector2f(0,0),Color::Magenta)};
+
+    
+    while (window.isOpen()) // void update();
+    {
+        Event event;
+        while (window.pollEvent(event))
+        {
+            if (event.type == Event::Closed) window.close();
+        }
+        if (flag){
+            auto begin = std::chrono::steady_clock::now();
+            fractal(xsize,ysize,xaxis,yaxis,scale,its,point,window);
+            cout << chrono::duration_cast<chrono::milliseconds>(chrono::steady_clock::now() - begin).count() << " ms\n";
+            flag=0;
+        }
+        window.display();
+    }
+}
+
