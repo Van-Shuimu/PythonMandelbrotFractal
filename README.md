@@ -1,2 +1,2 @@
 # PythonMandelbrotFractal
-My python mandelbrot fractal written using pygame python library
+My C++ mandelbrot fractal written using SFML C++ library
